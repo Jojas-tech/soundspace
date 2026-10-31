@@ -1,0 +1,11 @@
+RUN ON PC (Windows):
+1. Extract this whole ZIP into a normal folder (right-click > Extract All).
+2. Install Python 3 if you don't have it (tick "Add Python to PATH").
+3. Double-click Start_SoundSpace.bat. The app opens at http://localhost:8000/Soundspace.html
+   (YouTube search: paste your own key into youtube_key.txt first. Lyrics, local music and playlists work without it.)
+
+RUN ON ANDROID (installable app):
+1. Upload this whole folder to a free HTTPS host (Netlify Drop: app.netlify.com/drop, Cloudflare Pages, GitHub Pages).
+2. Open https://YOUR-SITE/Soundspace.html in Chrome on the phone.
+3. Tap "Install SoundSpace" (or Chrome menu > Install app).
+See README.txt for details.

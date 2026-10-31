@@ -1,0 +1,18 @@
+{
+  "name": "SoundSpace",
+  "short_name": "SoundSpace",
+  "description": "Music player with synced lyrics, local library and YouTube search.",
+  "id": "./Soundspace.html",
+  "start_url": "./Soundspace.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#141517",
+  "theme_color": "#141517",
+  "categories": ["music", "entertainment"],
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

@@ -345,7 +345,7 @@ async function load(auto,pos=0){const t=cur();if(!t)return;err('');
  $('#ytDock').hidden=true;if(ytPlayer&&ytReady)ytPlayer.stopVideo();
  const b=await getBlob(t.id).catch(()=>null);if(!b&&t.source==='jamendo'&&t.audio){if(url)URL.revokeObjectURL(url);url=null;a.src=t.audio;t.missing=false;updateNow();renderLyrics();if(auto)a.play().catch(e=>err('Preview playback failed: '+e.message));return}if(!b){t.missing=true;a.removeAttribute('src');err(`“${t.title}” is no longer stored in this browser. Re-import or download it again.`);updateNow();renderLyrics();return}
  t.missing=false;if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(b);a.src=url;if(pos)a.addEventListener('loadedmetadata',()=>{a.currentTime=pos},{once:true});updateNow();renderLyrics();if(auto)try{await a.play();t.plays=(t.plays||0)+1;t.last=Date.now();persist()}catch(e){err('Playback failed: '+(e.name==='NotSupportedError'?'this browser can’t decode that format.':e.message))}}
-function updateNow(){const t=cur();$('#pt').textContent=t?t.title:'Nothing playing';$('#pa').textContent=t?t.artist+(t.missing?' · file missing':t.source==='youtube'?' · YouTube':''):'Import music to begin';
+function updateNow(){const t=cur();$('#pt').textContent=t?t.title:'Nothing playing';$('#pa').textContent=t?t.artist+(t.missing?' · file missing':t.source==='youtube'?' · YouTube':t.source==='jamendo'?' · Jamendo':''):'Import music to begin';
  $('#pcv').outerHTML=t?cov(t).replace('class="cv ','id="pcv" class="cv '):'<div class="cv" id="pcv"></div>';
  $('#pfav').innerHTML=ico('heart',t?.fav);$('#pfav').setAttribute('aria-pressed',!!t?.fav);
  document.querySelectorAll('.row').forEach(r=>r.classList.toggle('on',!!t&&r.dataset.id===t.id));
@@ -508,7 +508,7 @@ const A={
  qrm:(e,el)=>{const i=+el.dataset.i;S.queue.splice(i,1);if(i<S.qi)S.qi--;else if(i===S.qi){a.pause();a.removeAttribute('src');S.qi=-1;updateNow()}persist();render()},
  theme:(e,el)=>{S.theme=el.dataset.k;document.documentElement.dataset.theme=S.theme;persist();render()},
  backup:()=>saveFile(`soundspace-backup-${new Date().toISOString().slice(0,10)}.json`,new Blob([JSON.stringify({app:'soundspace',version:1,exported:new Date().toISOString(),tracks:S.tracks.map(({missing,...t})=>t),playlists:S.playlists,prefs:{theme:S.theme,mood:S.mood}},null,1)],{type:'application/json'})),
- clear:async()=>{if(!await ask('Clear all saved data',[],'Delete everything','This removes every imported file, lyric, playlist and favorite from this browser. It can’t be undone — export a backup first if you want the metadata.'))return;a.pause();a.removeAttribute('src');await kv('clear').catch(()=>{});mem={};Object.assign(S,{tracks:[],playlists:[],queue:[],qi:-1,pos:0,mood:''});updateNow();renderLyrics();go({n:'home'});toast('All saved data cleared.')}
+ clear:async()=>{if(!await ask('Clear all saved data',[],'Delete everything','This removes every imported file, lyric, playlist and favorite from this browser. It can’t be undone — export a backup first if you want the metadata.'))return;a.pause();a.removeAttribute('src');await kv('clear').catch(()=>{});mem={};Object.assign(S,{tracks:[],onlineTracks:[],playlists:[],queue:[],qi:-1,pos:0,mood:'',downloads:[],jamendoClientId:''});downloadJobs=[];downloadQueue=[];updateNow();renderLyrics();go({n:'home'});toast('All saved data cleared.')}
 };
 document.addEventListener('click',e=>{const m=$('#menu');if(!m.hidden&&!e.target.closest('#menu'))m.hidden=true;if(!e.target.closest('.sb'))$('#sug').hidden=true;
  const el=e.target.closest('[data-act]');if(el&&A[el.dataset.act]){e.preventDefault();m.hidden=true;return A[el.dataset.act](e,el)}
@@ -541,7 +541,7 @@ Object.keys({cpTheme:1,cpAccent:1,cpBg:1,cpSurface:1,cpSurface2:1,cpText:1,cpMut
 
 /* init */
 (async()=>{try{db=await idb();const s=await kv('get','state');if(s)Object.assign(S,s)}catch{db=null;toast('Browser storage is unavailable here, so your library will not persist after closing.','err')}
- S.onlineTracks=S.onlineTracks||[];S.downloads=S.downloads||[];S.jamendoClientId=S.jamendoClientId||'';S.youtubeApiKey='';persist();await Promise.all(S.tracks.filter(t=>t.source!=='youtube').map(async t=>{try{t.missing=!(await kv('get','blob:'+t.id))}catch{t.missing=true}}));
+ S.onlineTracks=S.onlineTracks||[];S.downloads=(S.downloads||[]).map(j=>['queued','downloading'].includes(j.status)?{...j,status:'failed',error:'Interrupted when SoundSpace closed.',progress:j.progress||0}:j);S.jamendoClientId=S.jamendoClientId||'';S.youtubeApiKey='';persist();await Promise.all(S.tracks.filter(t=>t.source!=='youtube').map(async t=>{try{t.missing=!(await kv('get','blob:'+t.id))}catch{t.missing=true}}));
  S.queue=S.queue.filter(T);if(S.qi>=S.queue.length)S.qi=-1;
  document.documentElement.dataset.theme=S.theme;applyCustom();loadLyricsStyle();$('#app').classList.toggle('nly',!S.lyOpen);ctl();
  if(cur()&&!cur().missing)await load(false,S.pos);else updateNow();

@@ -22,6 +22,46 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         p=urlparse(self.path); qs=parse_qs(p.query)
         if p.path=='/api/health': return self.reply(200,{'ok':True,'service':'Sound Space local server','build':'SS-DEDICATED-LYRICS-STUDIO-TNR-20261031-V3'})
+        if p.path=='/api/jamendo/search':
+            q=qs.get('q',[''])[0].strip(); client_id=qs.get('client_id',[''])[0].strip()
+            if not q:return self.reply(400,{'error':'Enter a title, artist or genre.'})
+            if not client_id:return self.reply(400,{'error':'Add your Jamendo Client ID in SoundSpace Settings.'})
+            params={'client_id':client_id,'format':'json','limit':'30','order':'relevance','audioformat':'mp32','audiodlformat':'mp32','namesearch':q,'include':'musicinfo'}
+            try:
+                req=Request('https://api.jamendo.com/v3.0/tracks/?'+urlencode(params),headers={'User-Agent':'SoundSpace/3.0','Accept':'application/json'})
+                with urlopen(req,timeout=20) as r:data=json.loads(r.read().decode())
+                if data.get('headers',{}).get('status')!='success':return self.reply(502,{'error':data.get('headers',{}).get('error_message') or 'Jamendo search failed.'})
+                items=[]
+                for x in data.get('results',[]):
+                    items.append({'id':str(x.get('id','')),'title':x.get('name') or 'Unknown title','artist':x.get('artist_name') or 'Unknown artist','album':x.get('album_name') or '', 'duration':int(x.get('duration') or 0),'image':x.get('image') or x.get('album_image') or '', 'audio':x.get('audio') or '', 'downloadAllowed':bool(x.get('audiodownload_allowed')),'license':x.get('license_ccurl') or '', 'url':x.get('shareurl') or ''})
+                return self.reply(200,{'results':items,'count':len(items)})
+            except HTTPError as e:return self.reply(e.code,{'error':f'Jamendo API HTTP {e.code}'})
+            except (URLError,TimeoutError,OSError,ValueError) as e:return self.reply(502,{'error':f'Cannot reach Jamendo: {e}'})
+        if p.path=='/api/jamendo/download':
+            track_id=qs.get('id',[''])[0].strip(); client_id=qs.get('client_id',[''])[0].strip()
+            if not track_id.isdigit() or not client_id:return self.reply(400,{'error':'A valid track ID and Jamendo Client ID are required.'})
+            try:
+                check={'client_id':client_id,'format':'json','id':track_id,'fields':'id,name,artist_name,audiodownload_allowed'}
+                req=Request('https://api.jamendo.com/v3.0/tracks/?'+urlencode(check),headers={'User-Agent':'SoundSpace/3.0','Accept':'application/json'})
+                with urlopen(req,timeout=15) as r:meta=json.loads(r.read().decode())
+                rows=meta.get('results',[])
+                if not rows or not rows[0].get('audiodownload_allowed'):return self.reply(403,{'error':'The artist has not enabled downloads for this track.'})
+                fileurl='https://api.jamendo.com/v3.0/tracks/file/?'+urlencode({'client_id':client_id,'id':track_id,'action':'download','audioformat':'mp32'})
+                with urlopen(Request(fileurl,headers={'User-Agent':'SoundSpace/3.0'}),timeout=60) as audio:
+                    ctype=audio.headers.get('Content-Type','audio/mpeg')
+                    if not ctype.startswith('audio/') and 'octet-stream' not in ctype:return self.reply(502,{'error':'Jamendo did not return an audio file.'})
+                    self.send_response(200);self.send_header('Content-Type',ctype);self.send_header('Content-Disposition',f'attachment; filename="jamendo-{track_id}.mp3"')
+                    if audio.headers.get('Content-Length'):self.send_header('Content-Length',audio.headers['Content-Length'])
+                    self.send_header('Cache-Control','no-store');self.end_headers()
+                    while True:
+                        chunk=audio.read(128*1024)
+                        if not chunk:break
+                        self.wfile.write(chunk)
+            except HTTPError as e:return self.reply(e.code,{'error':f'Jamendo download failed (HTTP {e.code}).'})
+            except (URLError,TimeoutError,OSError,ValueError) as e:
+                try:return self.reply(502,{'error':f'Cannot download from Jamendo: {e}'})
+                except Exception:return
+            return
         if p.path=='/api/lyrics':
             track=qs.get('track',[''])[0].strip(); artist=qs.get('artist',[''])[0].strip()
             if not track:return self.reply(400,{'error':'A track title is required.'})

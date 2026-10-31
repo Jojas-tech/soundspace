@@ -21,7 +21,7 @@ class Handler(SimpleHTTPRequestHandler):
         body=json.dumps(obj).encode(); self.send_response(status); self.send_header('Content-Type','application/json; charset=utf-8'); self.send_header('Cache-Control','no-store'); self.send_header('Content-Length',str(len(body))); self.end_headers(); self.wfile.write(body)
     def do_GET(self):
         p=urlparse(self.path); qs=parse_qs(p.query)
-        if p.path=='/api/health': return self.reply(200,{'ok':True,'service':'Sound Space local server','build':'SS-DEDICATED-LYRICS-STUDIO-TNR-20261031-V3'})
+        if p.path=='/api/health': return self.reply(200,{'ok':True,'service':'Sound Space local server','build':'SS-JAMENDO-OFFLINE-DOWNLOADS-20261031-V4'})
         if p.path=='/api/jamendo/search':
             q=qs.get('q',[''])[0].strip(); client_id=qs.get('client_id',[''])[0].strip()
             if not q:return self.reply(400,{'error':'Enter a title, artist or genre.'})

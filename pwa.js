@@ -46,11 +46,23 @@ function addKeyButton(){const h=[...document.querySelectorAll('#view h2')].find(
  const b=document.createElement('button');b.id='ssKeyBtn';b.className='ghost';b.textContent=localStorage.getItem(KEY)?'Change YouTube key on this device':'Set YouTube key on this device';b.onclick=async()=>{const k=await askKey();if(k){b.textContent='Change YouTube key on this device';alert('YouTube key saved on this device.')}};
  const bar=document.createElement('div');bar.className='bar';bar.append(b);h.nextElementSibling?.after(bar)}
 addEventListener('DOMContentLoaded',()=>{const v=document.getElementById('view');if(v)new MutationObserver(addKeyButton).observe(v,{childList:true,subtree:true});addKeyButton()});
-/* ---- Install button (Android Chrome) ---- */
-let ip=null;const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone;
-addEventListener('beforeinstallprompt',e=>{e.preventDefault();ip=e;if(standalone()||sessionStorage.getItem('ssInstallHide'))return;
- const b=document.createElement('div');b.style.cssText='position:fixed;left:12px;bottom:calc(130px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;gap:6px;background:var(--s2,#26292d);border:1px solid var(--bd,#333);border-radius:999px;padding:6px 8px 6px 14px;align-items:center;color:var(--tx,#eee);box-shadow:0 8px 24px #0006';
- b.innerHTML='<span>Install SoundSpace</span><button id="ssI" style="border:0;border-radius:999px;padding:6px 14px;background:var(--ac,#b8f43c);color:var(--acx,#10140a);font-weight:700">Install</button><button id="ssX" aria-label="Dismiss" style="border:0;background:none;color:inherit;font-size:18px;padding:2px 8px">×</button>';
- document.body.append(b);b.querySelector('#ssI').onclick=async()=>{b.remove();ip.prompt();await ip.userChoice;ip=null};b.querySelector('#ssX').onclick=()=>{sessionStorage.setItem('ssInstallHide','1');b.remove()}});
-addEventListener('appinstalled',()=>document.querySelectorAll('[id=ssI]').forEach(x=>x.parentElement.remove()));
+/* ---- Install control ---- */
+let deferredInstallPrompt=null,installBar=null;
+const isInstalled=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+function showInstallControl(){
+ if(isInstalled()||installBar||!document.body)return;
+ installBar=document.createElement('div');installBar.id='ssInstallBar';
+ installBar.style.cssText='position:fixed;left:14px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:10000;display:flex;gap:8px;align-items:center;background:var(--s2,#26292d);border:1px solid var(--bd,#444);border-radius:999px;padding:7px 9px 7px 14px;color:var(--tx,#eee);box-shadow:0 8px 28px #0008;font:600 13px/1.2 system-ui,sans-serif';
+ installBar.innerHTML='<span>SoundSpace</span><button type="button" id="ssInstallAction" style="border:0;border-radius:999px;padding:8px 14px;background:var(--ac,#b8f43c);color:var(--acx,#10140a);font-weight:800;cursor:pointer">Install app</button><button type="button" id="ssInstallDismiss" aria-label="Dismiss install prompt" style="border:0;background:none;color:inherit;font-size:18px;padding:2px 7px;cursor:pointer">×</button>';
+ document.body.append(installBar);
+ installBar.querySelector('#ssInstallAction').addEventListener('click',async()=>{
+  if(deferredInstallPrompt){const ev=deferredInstallPrompt;deferredInstallPrompt=null;try{await ev.prompt();await ev.userChoice}catch(err){console.warn('PWA prompt unavailable',err)}return}
+  const mobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'');
+  alert(mobile?'Open your browser menu and choose “Install app” or “Add to Home Screen”, if offered.':'Open your browser menu and choose “Install SoundSpace” or “Install page as app”, if offered.');
+ });
+ installBar.querySelector('#ssInstallDismiss').addEventListener('click',()=>{installBar.remove();installBar=null});
+}
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;showInstallControl()});
+addEventListener('appinstalled',()=>{deferredInstallPrompt=null;installBar?.remove();installBar=null});
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',showInstallControl,{once:true});else showInstallControl();
 })();

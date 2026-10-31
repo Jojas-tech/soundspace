@@ -5,7 +5,7 @@ URL='http://localhost:8000/Soundspace.html'
 def healthy():
     try:
         with urllib.request.urlopen('http://localhost:8000/api/health',timeout=.45) as r:
-            return r.status==200 and b'SS-DEDICATED-LYRICS-STUDIO-TNR-20261031-V3' in r.read(2048)
+            return r.status==200 and b'SS-JAMENDO-OFFLINE-DOWNLOADS-20261031-V4' in r.read(2048)
     except Exception:return False
 if not healthy():
     with socket.socket() as s:

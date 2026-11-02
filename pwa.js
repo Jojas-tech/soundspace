@@ -50,7 +50,7 @@ addEventListener('DOMContentLoaded',()=>{const v=document.getElementById('view')
 let ip=null;const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone;
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();ip=e;if(standalone()||sessionStorage.getItem('ssInstallHide'))return;
  const b=document.createElement('div');b.style.cssText='position:fixed;left:12px;bottom:calc(130px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;gap:6px;background:var(--s2,#26292d);border:1px solid var(--bd,#333);border-radius:999px;padding:6px 8px 6px 14px;align-items:center;color:var(--tx,#eee);box-shadow:0 8px 24px #0006';
- b.innerHTML='<span>Install UNHEARD</span><button id="ssI" style="border:0;border-radius:999px;padding:6px 14px;background:var(--ac,#b8f43c);color:var(--acx,#10140a);font-weight:700">Install</button><button id="ssX" aria-label="Dismiss" style="border:0;background:none;color:inherit;font-size:18px;padding:2px 8px">×</button>';
+ b.innerHTML='<span>Install UNHEARD.</span><button id="ssI" style="border:0;border-radius:999px;padding:6px 14px;background:var(--ac,#b8f43c);color:var(--acx,#10140a);font-weight:700" >Install UNHEARD.</button><button id="ssX" aria-label="Dismiss" style="border:0;background:none;color:inherit;font-size:18px;padding:2px 8px">×</button>';
  document.body.append(b);b.querySelector('#ssI').onclick=async()=>{b.remove();ip.prompt();await ip.userChoice;ip=null};b.querySelector('#ssX').onclick=()=>{sessionStorage.setItem('ssInstallHide','1');b.remove()}});
 addEventListener('appinstalled',()=>document.querySelectorAll('[id=ssI]').forEach(x=>x.parentElement.remove()));
 })();

@@ -2,14 +2,14 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<title>UNHEARD — Lyrics Studio</title>
+<title>UNHEARD. — Lyrics Studio</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#141517">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="UNHEARD">
+<meta name="apple-mobile-web-app-title" content="UNHEARD.">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script src="pwa.js"></script>
@@ -370,7 +370,7 @@ const sortT=(ts,by)=>[...ts].sort({added:(x,y)=>y.added-x.added,title:(x,y)=>x.t
 const grp=(kind,name,n)=>`<button class="card" data-act="grp" data-k="${kind}" data-name="${esc(name)}">${cov({id:name,title:name},true)}<b>${esc(name)}</b><span>${n} track${n===1?'':'s'}</span></button>`;
 const plCard=p=>`<button class="card" data-act="openpl" data-id="${p.id}">${cov({id:p.id,title:p.name},true)}<b>${esc(p.name)}</b><span>Playlist · ${p.ids.filter(T).length} tracks</span></button>`;
 const uniq=k=>{const m={};S.tracks.forEach(t=>{if(t[k])m[t[k]]=(m[t[k]]||0)+1});return Object.entries(m).sort((x,y)=>x[0].localeCompare(y[0]))};
-function home(){if(!S.tracks.length)return`<div class="hero"><h1>Your music, your device.</h1><p>UNHEARD plays audio files you import. Files, lyrics, playlists and favorites stay in this browser’s storage — nothing is uploaded. Add songs, then drop in matching .lrc files for synced lyrics.</p><p>Import your own files or open Discover to search YouTube. Imported tracks stay available offline in this browser; YouTube playback needs internet.</p><button class="primary" data-act="import">Import music</button> <button class="ghost" data-act="discover">Discover music</button></div>`;
+function home(){if(!S.tracks.length)return`<div class="hero"><h1>Your music, your device.</h1><p>UNHEARD. plays audio files you import. Files, lyrics, playlists and favorites stay in this browser’s storage — nothing is uploaded. Add songs, then drop in matching .lrc files for synced lyrics.</p><p>Import your own files or open Discover to search YouTube. Imported tracks stay available offline in this browser; YouTube playback needs internet.</p><button class="primary" data-act="import">Import music</button> <button class="ghost" data-act="discover">Discover music</button></div>`;
  const ts=S.tracks,id=t=>t.id,played=sortT(ts.filter(t=>t.last),'x').sort((x,y)=>y.last-x.last).slice(0,6),art={};ts.forEach(t=>art[t.artist]=(art[t.artist]||0)+(t.plays||0)+(t.fav?3:0));
  const score=t=>art[t.artist]+(S.mood&&t.mood===S.mood?6:0)+(t.plays||0)*.5,rec=[...ts].sort((x,y)=>score(y)-score(x)).slice(0,6),
  qp=S.mood?ts.filter(t=>t.mood===S.mood):[...ts].sort((x,y)=>(y.plays||0)-(x.plays||0)).filter(t=>t.plays).slice(0,6),topA=Object.entries(art).sort((x,y)=>y[1]-x[1]).slice(0,6);

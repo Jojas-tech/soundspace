@@ -26,7 +26,7 @@ class Handler(SimpleHTTPRequestHandler):
             q=qs.get('q',[''])[0].strip(); client_id=qs.get('client_id',[''])[0].strip()
             if not q:return self.reply(400,{'error':'Enter a title, artist or genre.'})
             if not client_id:return self.reply(400,{'error':'Add your Jamendo Client ID in SoundSpace Settings.'})
-            params={'client_id':client_id,'format':'json','limit':'30','order':'relevance','audioformat':'mp32','audiodlformat':'mp32','namesearch':q,'include':'musicinfo'}
+            params={'client_id':client_id,'format':'json','limit':'30','order':'relevance','audioformat':'mp32','audiodlformat':'mp32','search':q,'type':'single albumtrack','include':'musicinfo'}
             try:
                 req=Request('https://api.jamendo.com/v3.0/tracks/?'+urlencode(params),headers={'User-Agent':'SoundSpace/3.0','Accept':'application/json'})
                 with urlopen(req,timeout=20) as r:data=json.loads(r.read().decode())

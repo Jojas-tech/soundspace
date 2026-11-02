@@ -41,18 +41,31 @@ class Handler(SimpleHTTPRequestHandler):
             track_id=qs.get('id',[''])[0].strip(); client_id=qs.get('client_id',[''])[0].strip()
             if not track_id.isdigit() or not client_id:return self.reply(400,{'error':'A valid track ID and Jamendo Client ID are required.'})
             try:
-                check={'client_id':client_id,'format':'json','id':track_id,'fields':'id,name,artist_name,audiodownload_allowed'}
+                # Ask the tracks API for its documented audiodownload URL. The
+                # /tracks/file endpoint is only a redirect and can return a
+                # non-audio response through some redirect/proxy combinations.
+                check={'client_id':client_id,'format':'json','id':track_id,'fields':'id,name,artist_name,audiodownload,audiodownload_allowed','audiodlformat':'mp32'}
                 req=Request('https://api.jamendo.com/v3.0/tracks/?'+urlencode(check),headers={'User-Agent':'SoundSpace/3.0','Accept':'application/json'})
                 with urlopen(req,timeout=15) as r:meta=json.loads(r.read().decode())
                 rows=meta.get('results',[])
-                if not rows or not rows[0].get('audiodownload_allowed'):return self.reply(403,{'error':'The artist has not enabled downloads for this track.'})
-                fileurl='https://api.jamendo.com/v3.0/tracks/file/?'+urlencode({'client_id':client_id,'id':track_id,'action':'download','audioformat':'mp32'})
-                with urlopen(Request(fileurl,headers={'User-Agent':'SoundSpace/3.0'}),timeout=60) as audio:
-                    ctype=audio.headers.get('Content-Type','audio/mpeg')
-                    if not ctype.startswith('audio/') and 'octet-stream' not in ctype:return self.reply(502,{'error':'Jamendo did not return an audio file.'})
-                    self.send_response(200);self.send_header('Content-Type',ctype);self.send_header('Content-Disposition',f'attachment; filename="jamendo-{track_id}.mp3"')
-                    if audio.headers.get('Content-Length'):self.send_header('Content-Length',audio.headers['Content-Length'])
+                if not rows:return self.reply(404,{'error':'Jamendo could not find this track.'})
+                track=rows[0]
+                if not track.get('audiodownload_allowed'):return self.reply(403,{'error':'The artist has not enabled downloads for this track.'})
+                fileurl=track.get('audiodownload') or ''
+                if not fileurl:
+                    fileurl='https://api.jamendo.com/v3.0/tracks/file/?'+urlencode({'client_id':client_id,'id':track_id,'action':'download','audioformat':'mp32'})
+                with urlopen(Request(fileurl,headers={'User-Agent':'SoundSpace/3.0','Accept':'audio/mpeg,audio/*;q=0.9,application/octet-stream;q=0.8'}),timeout=60) as audio:
+                    ctype=(audio.headers.get('Content-Type') or '').split(';')[0].strip().lower()
+                    first=audio.read(64*1024)
+                    is_mp3=first.startswith(b'ID3') or (len(first)>1 and first[0]==0xff and (first[1]&0xe0)==0xe0)
+                    is_audio=ctype.startswith('audio/') or 'octet-stream' in ctype or 'application/force-download' in ctype or is_mp3
+                    if not is_audio:
+                        detail=first[:180].decode('utf-8','replace').strip()
+                        return self.reply(502,{'error':'Jamendo returned a non-audio response'+(': '+detail if detail else '.')})
+                    self.send_response(200);self.send_header('Content-Type',ctype if ctype.startswith('audio/') else 'audio/mpeg');self.send_header('Content-Disposition',f'attachment; filename="jamendo-{track_id}.mp3"')
+                    if audio.headers.get('Content-Length'):self.send_header('Content-Length',str(int(audio.headers['Content-Length'])))
                     self.send_header('Cache-Control','no-store');self.end_headers()
+                    self.wfile.write(first)
                     while True:
                         chunk=audio.read(128*1024)
                         if not chunk:break

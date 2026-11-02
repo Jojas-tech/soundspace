@@ -1,6 +1,6 @@
 {
-  "name": "UNHEARD.",
-  "short_name": "UNHEARD.",
+  "name": "UNHEARD",
+  "short_name": "UNHEARD",
   "description": "Music player with synced lyrics, local library and YouTube search.",
   "id": "./Soundspace.html",
   "start_url": "./Soundspace.html",
@@ -9,28 +9,10 @@
   "orientation": "any",
   "background_color": "#141517",
   "theme_color": "#141517",
-  "categories": [
-    "music",
-    "entertainment"
-  ],
+  "categories": ["music", "entertainment"],
   "icons": [
-    {
-      "src": "./icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./icon-maskable-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
   ]
 }

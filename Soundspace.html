@@ -20,8 +20,7 @@
 body{background-color:var(--bg);background-image:none;background-position:center;background-size:cover;background-attachment:fixed;color:var(--tx);font:15px/1.45 "Avenir Next","Segoe UI",system-ui,sans-serif;overflow:hidden}
 button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
-.app{display:grid;grid-template-columns:208px minmax(0,1fr) 340px;grid-template-rows:minmax(0,1fr) 88px;height:100%}
-.app.nly{grid-template-columns:208px minmax(0,1fr) 0}
+.app{display:grid;grid-template-columns:208px minmax(0,1fr);grid-template-rows:minmax(0,1fr) 88px;height:100%}.app.nly{grid-template-columns:208px minmax(0,1fr)}
 #side{background:transparent;padding:20px 14px;border-right:1px solid var(--bd);display:flex;flex-direction:column;gap:4px;overflow:auto}
 .logo{font-size:22px;font-weight:800;letter-spacing:-.02em;padding:0 10px 14px}.logo i{color:var(--ac);font-style:normal}
 #side button{background:none;border:0;text-align:left;padding:9px 12px;border-radius:10px;color:var(--mu)}
@@ -50,7 +49,7 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .hero{border:1px dashed var(--bd);border-radius:20px;padding:40px;margin-top:20px;background:radial-gradient(circle at 90% 0,#b8f43c18,transparent 50%),var(--s1)}.hero p{max-width:56ch;color:var(--mu)}
 .empty{color:var(--mu)}
 #ytDock{position:fixed;right:18px;bottom:102px;width:min(360px,42vw);z-index:30;background:var(--s1);border:1px solid var(--bd);border-radius:14px;overflow:hidden;box-shadow:0 10px 32px #0008}#ytDock[hidden]{display:none}#ytDockHead{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;font-size:12px;color:var(--mu)}#ytFrame{width:100%;aspect-ratio:16/9}#ytFrame iframe{width:100%;height:100%;border:0;display:block}@media(max-width:900px){#ytDock{right:10px;bottom:130px;width:min(320px,78vw)}}
-#ly{background:transparent;border-left:1px solid var(--bd);display:flex;flex-direction:column;min-width:0;overflow:hidden}.nly #ly{visibility:hidden}
+#ly{position:fixed;z-index:25;right:0;top:0;bottom:88px;width:min(390px,calc(100vw - 24px));background:var(--s1);border-left:1px solid var(--bd);box-shadow:-18px 0 48px #0007;display:flex;flex-direction:column;min-width:0;overflow:hidden;transform:translateX(105%);visibility:hidden;transition:transform .24s ease,visibility .24s}.app.lyo #ly{transform:translateX(0);visibility:visible}#lyToggle{position:fixed;right:12px;top:50%;transform:translateY(-50%);z-index:24;padding:9px 12px;border-radius:999px;box-shadow:0 5px 18px #0005;font-size:12px}
 #ly header{padding:16px;border-bottom:1px solid var(--bd)}#lyname{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#lystat{font-size:12px;color:var(--mu);margin:2px 0 8px}
 .lytools{display:flex;gap:6px;flex-wrap:wrap}.lytools button{font-size:12px;padding:5px 10px}
 #lyq{width:100%;margin-top:8px;padding:7px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--s1)}
@@ -70,10 +69,7 @@ input[type=range]{accent-color:var(--ac)}
 dialog{background:var(--s1);color:var(--tx);border:1px solid var(--bd);border-radius:18px;padding:22px;width:min(440px,92vw)}dialog::backdrop{background:#000a}dialog h3{margin:0 0 10px}dialog label{display:block;margin:10px 0;font-size:13px;color:var(--mu)}dialog input,dialog select,dialog textarea{display:block;width:100%;margin-top:4px;padding:9px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--bg)}dialog .btns{justify-content:flex-end;margin-top:14px}
 .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}.bar select{background:var(--s2);border:1px solid var(--bd);border-radius:999px;padding:7px 12px}
 .set p{color:var(--mu);max-width:64ch}kbd{background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:0 6px;font-size:12px}
-@media(max-width:900px){body{overflow:auto}.app,.app.nly{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) 120px}
-#side{flex-direction:row;border:0;border-bottom:1px solid var(--bd);padding:8px;overflow-x:auto}.logo{display:none}#side button{white-space:nowrap}
-#mainc{padding:0 14px 20px}#ly{position:fixed;inset:0 0 120px 0;z-index:20;background:var(--bg);display:none;visibility:visible}.lyo #ly{display:flex}
-#pl{grid-template-columns:1fr auto;padding:8px 12px}.vol{display:none}.ctl{grid-column:1/-1;grid-row:2}#err{left:14px;bottom:128px}.tag{display:none}}
+@media(max-width:900px){body{overflow:auto}.app,.app.nly{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) 120px}#side{flex-direction:row;border:0;border-bottom:1px solid var(--bd);padding:8px;overflow-x:auto}.logo{display:none}#side button{white-space:nowrap}#mainc{padding:0 14px 20px}#ly{top:0;bottom:120px;width:min(390px,100vw)}#lyToggle{top:auto;bottom:132px;right:10px;transform:none}#pl{grid-template-columns:1fr auto;padding:8px 12px}.vol{display:none}.ctl{grid-column:1/-1;grid-row:2}#err{left:14px;bottom:128px}.tag{display:none}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 
 /* Dedicated Lyrics Studio and font controls */
@@ -130,7 +126,7 @@ body.hide-nav-labels #side button{font-size:0;text-align:center}body.hide-nav-la
 <main id="mainc">
 <header class="top">
 <div class="sb" role="search"><input id="q" type="search" placeholder="Search songs, artists, albums, playlists  ( / )" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="sug" aria-autocomplete="list" aria-label="Search your library"><div id="sug" role="listbox" hidden></div></div>
-<button class="ghost" data-act="lytoggle" aria-label="Toggle lyrics panel">Lyrics</button>
+<button class="ghost" id="lyToggle" data-act="lytoggle" aria-label="Toggle lyrics drawer" aria-expanded="false">♫ Lyrics</button>
 <button class="primary" data-act="import">Import music</button>
 </header>
 <div id="view"></div>
@@ -204,7 +200,7 @@ const IC={play:'M8 5v14l11-7z',pause:'M6 5h4v14H6zM14 5h4v14h-4z',prev:'M6 6h2v1
 const FILLED=['play','pause','prev','next'];
 const ico=(n,on)=>`<svg class="i ${FILLED.includes(n)?'f':''} ${n==='heart'&&on?'h':''}" viewBox="0 0 24 24" aria-hidden="true"><path d="${IC[n]}"/></svg>`;
 const MOODS=['Chill','Focus','Energy','Romantic','Late Night','Sad'],AUD=/\.(mp3|wav|ogg|oga|opus|m4a|aac|flac)$/i,MAX=250*1024*1024;
-const S={tracks:[],onlineTracks:[],playlists:[],queue:[],qi:-1,pos:0,shuffle:false,repeat:'off',vol:1,muted:false,theme:'dark',mood:'',lyOpen:true,youtubeApiKey:'',custom:{}};
+const S={tracks:[],onlineTracks:[],playlists:[],queue:[],qi:-1,pos:0,shuffle:false,repeat:'off',vol:1,muted:false,theme:'dark',mood:'',lyOpen:false,youtubeApiKey:'',custom:{}};
 let V={n:'home'},L={},lt='songs',sf='all',sortBy='added',db=null,url=null,mem={},LY=[],lyI=-1,plainView=false,SG=[],si=-1,debounce,saveT,lastSave=0,ytPlayer=null,ytReady=false,ytPending=null,ytTimer=null,ytSearchResults=[],ytQuery='',lyricFetches=new Set();
 const T=id=>S.tracks.find(t=>t.id===id)||S.onlineTracks.find(t=>t.id===id),cur=()=>T(S.queue[S.qi]),uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const fmt=s=>isFinite(s)&&s>0?Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'):'0:00';
@@ -282,7 +278,8 @@ function applyLyricsStyle(){const c={font:$('#lyFont')?.value||'Inter,Segoe UI,s
 function applyStudioLyricsStyle(){const c={font:$('#studioLyFont')?.value||'Inter,Segoe UI,sans-serif',size:+($('#studioLySize')?.value||20),color:$('#studioLyColor')?.value||'#b8f43c',opacity:+($('#studioLyOpacity')?.value||55),around:+($('#studioLyAround')?.value||2),bold:!!$('#studioLyBold')?.checked};saveLyricsStyle(c)}
 function loadLyricsStyle(){const c=S.custom?.lyricsStyle||{};const vals={font:c.font||'Inter,Segoe UI,sans-serif',size:c.size||20,color:c.color||'#b8f43c',opacity:c.opacity??55,around:c.around||2,bold:!!c.bold};const ids={lyFont:'font',lySize:'size',lyColor:'color',lyOpacity:'opacity',lyAround:'around',lyBold:'bold',studioLyFont:'font',studioLySize:'size',studioLyColor:'color',studioLyOpacity:'opacity',studioLyAround:'around',studioLyBold:'bold'};for(const[id,k]of Object.entries(ids)){const e=$('#'+id);if(e){if(k==='bold')e.checked=vals[k];else e.value=vals[k]}}saveLyricsStyle(vals)}
 function refreshLyricsStudio(){if(V.n==='lyrics-studio')render()}
-function renderLyrics(){const t=cur(),b=$('#lybody');$('#lyname').textContent=t?`${t.title} — ${t.artist}`:'Nothing playing';LY=[];lyI=-1;
+function setLyricsDrawer(open){S.lyOpen=!!open;$('#app').classList.toggle('lyo',S.lyOpen);$('#app').classList.toggle('nly',!S.lyOpen);$('#lyToggle').setAttribute('aria-expanded',String(S.lyOpen));persist()}
+ function renderLyrics(){const t=cur(),b=$('#lybody');$('#lyname').textContent=t?`${t.title} — ${t.artist}`:'Nothing playing';LY=[];lyI=-1;
  if(!t){b.innerHTML='<p class="empty">Play a track to see its lyrics here.</p>';refreshLyricsStudio();return stat('')}
  const l=t.lyrics;if(!l){if(t.source==='youtube'){b.innerHTML='<p class="empty">Searching for synced lyrics…</p>';refreshLyricsStudio();fetchOnlineLyrics(t);return stat('Looking up lyrics')};b.innerHTML='<p class="empty">No lyrics for this track.</p><button class="primary" data-act="lyimp">Import .lrc or .txt</button> <button class="ghost" data-act="lyedit">Paste lyrics</button>';refreshLyricsStudio();return stat('No lyrics')}
  if(l.synced&&!plainView){LY=parseLRC(l.text);b.innerHTML=LY.map((x,i)=>`<p class="ln" data-t="${x.t}">${esc(x.text)||'♪'}</p>`).join('');stat('Synced lyrics · LRCLIB / LRC')}
@@ -328,7 +325,7 @@ function step(dir=1,ended=false){
  S.qi=next;persist();render();load(true);
 }
 /* playback */
-async function load(auto,pos=0){const t=cur();if(!t)return;err('');
+async function load(auto,pos=0){const t=cur();if(!t)return;setLyricsDrawer(true);err('');
  if(t.source==='youtube'){
   a.pause();a.removeAttribute('src');$('#ytDock').hidden=false;updateNow();renderLyrics();
   // Keep the requested video until the IFrame player is actually ready.
@@ -475,7 +472,7 @@ const A={
  discover:()=>go({n:'discover'}),dailyMix:()=>{const all=[...S.tracks,...(S.onlineTracks||[])].filter(t=>t.last||t.plays);const ids=all.sort((a,b)=>(b.plays||0)-(a.plays||0)||(b.last||0)-(a.last||0)).slice(0,20).map(t=>t.id);if(ids.length)playIds(ids,0);else toast('Play a few tracks first to build your Daily Mix.','err')},ytmore:()=>searchYouTube(youtubeQuery,true),saveyoutube:()=>{S.youtubeApiKey=$('#youtubeKey')?.value.trim()||'';persist();toast(S.youtubeApiKey?'YouTube API key saved in this browser.':'YouTube API key cleared.');},ytclose:()=>{$('#ytDock').hidden=true},
  import:()=>$('#fi').click(),lyfiles:()=>$('#lf').click(),lyimp:()=>{if(!cur())return toast('Play a track first.','err');$('#lf').click()},
  dclose:()=>$('#dlg').close('cancel'),
- lytoggle:()=>{const m=matchMedia('(max-width:900px)').matches;if(m)$('#app').classList.toggle('lyo');else{S.lyOpen=!S.lyOpen;$('#app').classList.toggle('nly',!S.lyOpen);persist()}},
+ lytoggle:()=>{S.lyOpen=!$('#app').classList.contains('lyo');setLyricsDrawer(S.lyOpen);persist()},
  lyretry:()=>{const t=cur();if(t)fetchOnlineLyrics(t,true)},lyedit:async()=>{const t=cur();if(!t)return toast('Play a track first.','err');const r=await ask('Lyrics for '+t.title,[{k:'t',label:'Paste lyrics you own or have permission to use. Lines starting with [mm:ss.xx] will be treated as synced.',v:t.lyrics?.text||'',area:1}],'Save');if(!r)return;if(r.t.trim()){setLyrics(t,r.t);toast('Lyrics saved.')}else{delete t.lyrics;toast('Lyrics removed.')}persist();renderLyrics()},
  lydl:(e,el)=>lyDownload(cur(),el.dataset.f),lyplain:()=>{plainView=!plainView;$('#lyplain').setAttribute('aria-pressed',plainView);$('#lyplain').classList.toggle('on',plainView);renderLyrics()},
  pp:toggle,prev:()=>{if(a.currentTime>3)a.currentTime=0;else step(-1)},next:()=>step(1),
@@ -536,7 +533,7 @@ Object.keys({cpTheme:1,cpAccent:1,cpBg:1,cpSurface:1,cpSurface2:1,cpText:1,cpMut
 (async()=>{try{db=await idb();const s=await kv('get','state');if(s)Object.assign(S,s)}catch{db=null;toast('Browser storage is unavailable here, so your library will not persist after closing.','err')}
  S.onlineTracks=S.onlineTracks||[];S.youtubeApiKey='';persist();await Promise.all(S.tracks.filter(t=>t.source!=='youtube').map(async t=>{try{t.missing=!(await kv('get','blob:'+t.id))}catch{t.missing=true}}));
  S.queue=S.queue.filter(T);if(S.qi>=S.queue.length)S.qi=-1;
- document.documentElement.dataset.theme=S.theme;applyCustom();loadLyricsStyle();$('#app').classList.toggle('nly',!S.lyOpen);ctl();
+ document.documentElement.dataset.theme=S.theme;applyCustom();loadLyricsStyle();S.lyOpen=false;setLyricsDrawer(false);ctl();
  if(cur()&&!cur().missing)await load(false,S.pos);else updateNow();
  renderLyrics();render()})();
 </script>

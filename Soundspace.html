@@ -2,14 +2,14 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<title>SoundSpace — Lyrics Studio</title>
+<title>UNHEARD. — Lyrics Studio</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#141517">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="SoundSpace">
+<meta name="apple-mobile-web-app-title" content="UNHEARD.">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script src="pwa.js"></script>
@@ -300,7 +300,7 @@ function syncLy(force){if(!LY.length)return;const c=cur()?.source==='youtube'&&y
 /* downloads */
 async function saveFile(name,data,hint){const clean=name.replace(/[\\/:*?"<>|]+/g,'_');let dl=null;try{dl=window.claude?.use?await window.claude.use('downloads'):null}catch{}
  try{if(dl){toast('Preparing download…');await dl.save({filename:clean,data});toast(`Saved ${clean}`)}else{const u=URL.createObjectURL(data instanceof Blob?data:new Blob([data]));const e=document.createElement('a');e.href=u;e.download=clean;document.body.append(e);e.click();e.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast(`Download started: ${clean}`)}}
- catch(e){if(e?.code==='declined')return toast('Download cancelled.');if(e?.code==='rejected_extension'){if(hint==='lrc')return saveFile(clean+'.txt',data,'x').then(()=>toast('This viewer only saves .txt — rename it to .lrc after saving.'));return toast('This hosted viewer can’t save that file type. Open the downloaded Soundspace HTML locally to export audio.','err')}toast('Download failed: '+(e?.message||'unknown error'),'err')}}
+ catch(e){if(e?.code==='declined')return toast('Download cancelled.');if(e?.code==='rejected_extension'){if(hint==='lrc')return saveFile(clean+'.txt',data,'x').then(()=>toast('This viewer only saves .txt — rename it to .lrc after saving.'));return toast('This hosted viewer can’t save that file type. Open the downloaded UNHEARD. HTML locally to export audio.','err')}toast('Download failed: '+(e?.message||'unknown error'),'err')}}
 const fname=t=>`${t.artist} - ${t.title}`;
 function lyDownload(t,f){if(!t?.lyrics)return toast('This track has no lyrics to download.','err');
  if(f==='lrc'){if(!t.lyrics.synced)return toast('These lyrics have no timestamps, so a .lrc export would be invalid. Download .txt instead.','err');return saveFile(fname(t)+'.lrc',new Blob([t.lyrics.text],{type:'text/plain'}),'lrc')}
@@ -372,7 +372,7 @@ const sortT=(ts,by)=>[...ts].sort({added:(x,y)=>y.added-x.added,title:(x,y)=>x.t
 const grp=(kind,name,n)=>`<button class="card" data-act="grp" data-k="${kind}" data-name="${esc(name)}">${cov({id:name,title:name},true)}<b>${esc(name)}</b><span>${n} track${n===1?'':'s'}</span></button>`;
 const plCard=p=>`<button class="card" data-act="openpl" data-id="${p.id}">${cov({id:p.id,title:p.name},true)}<b>${esc(p.name)}</b><span>Playlist · ${p.ids.filter(T).length} tracks</span></button>`;
 const uniq=k=>{const m={};S.tracks.forEach(t=>{if(t[k])m[t[k]]=(m[t[k]]||0)+1});return Object.entries(m).sort((x,y)=>x[0].localeCompare(y[0]))};
-function home(){if(!S.tracks.length)return`<div class="hero"><h1>Your music, your device.</h1><p>Soundspace plays audio files you import. Files, lyrics, playlists and favorites stay in this browser’s storage — nothing is uploaded. Add songs, then drop in matching .lrc files for synced lyrics.</p><p>Import your own files or open Discover to search YouTube. Imported tracks stay available offline in this browser; YouTube playback needs internet.</p><button class="primary" data-act="import">Import music</button> <button class="ghost" data-act="discover">Discover music</button></div>`;
+function home(){if(!S.tracks.length)return`<div class="hero"><h1>Your music, your device.</h1><p>UNHEARD. plays audio files you import. Files, lyrics, playlists and favorites stay in this browser’s storage — nothing is uploaded. Add songs, then drop in matching .lrc files for synced lyrics.</p><p>Import your own files or open Discover to search YouTube. Imported tracks stay available offline in this browser; YouTube playback needs internet.</p><button class="primary" data-act="import">Import music</button> <button class="ghost" data-act="discover">Discover music</button></div>`;
  const ts=S.tracks,id=t=>t.id,played=sortT(ts.filter(t=>t.last),'x').sort((x,y)=>y.last-x.last).slice(0,6),art={};ts.forEach(t=>art[t.artist]=(art[t.artist]||0)+(t.plays||0)+(t.fav?3:0));
  const score=t=>art[t.artist]+(S.mood&&t.mood===S.mood?6:0)+(t.plays||0)*.5,rec=[...ts].sort((x,y)=>score(y)-score(x)).slice(0,6),
  qp=S.mood?ts.filter(t=>t.mood===S.mood):[...ts].sort((x,y)=>(y.plays||0)-(x.plays||0)).filter(t=>t.plays).slice(0,6),topA=Object.entries(art).sort((x,y)=>y[1]-x[1]).slice(0,6);
@@ -545,7 +545,7 @@ Object.keys({cpTheme:1,cpAccent:1,cpBg:1,cpSurface:1,cpSurface2:1,cpText:1,cpMut
 
 /* init */
 (async()=>{try{db=await idb();const s=await kv('get','state');if(s)Object.assign(S,s)}catch{db=null;toast('Browser storage is unavailable here, so your library will not persist after closing.','err')}
- S.onlineTracks=S.onlineTracks||[];S.downloads=(S.downloads||[]).map(j=>['queued','downloading'].includes(j.status)?{...j,status:'failed',error:'Interrupted when SoundSpace closed.',progress:j.progress||0}:j);S.jamendoClientId=S.jamendoClientId||'';S.youtubeApiKey='';persist();await Promise.all(S.tracks.filter(t=>t.source!=='youtube').map(async t=>{try{t.missing=!(await kv('get','blob:'+t.id))}catch{t.missing=true}}));
+ S.onlineTracks=S.onlineTracks||[];S.downloads=(S.downloads||[]).map(j=>['queued','downloading'].includes(j.status)?{...j,status:'failed',error:'Interrupted when UNHEARD. closed.',progress:j.progress||0}:j);S.jamendoClientId=S.jamendoClientId||'';S.youtubeApiKey='';persist();await Promise.all(S.tracks.filter(t=>t.source!=='youtube').map(async t=>{try{t.missing=!(await kv('get','blob:'+t.id))}catch{t.missing=true}}));
  S.queue=S.queue.filter(T);if(S.qi>=S.queue.length)S.qi=-1;
  document.documentElement.dataset.theme=S.theme;applyCustom();loadLyricsStyle();$('#app').classList.toggle('nly',!S.lyOpen);ctl();
  if(cur()&&!cur().missing)await load(false,S.pos);else updateNow();

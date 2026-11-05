@@ -624,32 +624,58 @@ let youtubeResults=[],youtubeQuery='',youtubePageToken='',youtubeMore=false;
 function onlineRow(t,i){return `<div class="row" data-l="youtube" data-i="${i}" data-id="${t.id}" tabindex="0" aria-label="Play ${esc(t.title)} by ${esc(t.artist)}"><div class="cv" style="background-image:url('${esc(t.image||'')}');background-size:cover;background-position:center"></div><div class="m"><b>${esc(t.title)}</b><span>${esc(t.artist)}</span></div><span class="tag">YouTube</span><span class="du">${fmt(t.dur)}</span><button class="ib" data-act="fav" data-id="${t.id}" aria-pressed="${!!t.fav}" aria-label="${t.fav?'Remove from favorites':'Add to favorites'}">${ico('heart',t.fav)}</button></div>`}
 function discover(){const picks=[...(S.onlineTracks||[]),...S.tracks].filter(t=>(t.plays||0)>0).sort((a,b)=>(b.plays||0)-(a.plays||0)||(b.last||0)-(a.last||0)).slice(0,5);const recent=[...(S.onlineTracks||[]),...S.tracks].filter(t=>t.last).sort((a,b)=>b.last-a.last).slice(0,5);return `<h1>Discover</h1><p class="sub">Your listening, your next discovery.</p>${picks.length?sec('Quick Picks','Based on what you play most',list(picks.map(t=>t.id),'qp')):''}${picks.length?'<div class="bar"><button class="primary" data-act="dailyMix">▶ Play your Daily Mix</button><button class="ghost" data-nav="history">Full listening history</button></div>':''}${recent.length?sec('Recently played','Pick up where you left off',list(recent.map(t=>t.id),'recent')):''}<h2>Find something new</h2><p class="sub">Search YouTube music videos and play them in the official embedded player.</p><form id="youtubeSearch" class="bar"><input id="youtubeQuery" value="${esc(youtubeQuery)}" placeholder="Search songs, artists or albums" style="flex:1;min-width:180px;padding:9px 14px;border-radius:999px;border:1px solid var(--bd);background:var(--s1)"><button class="primary" type="submit">Search YouTube</button></form><div id="youtubeStatus" class="sub" aria-live="polite"></div>${youtubeResults.length?sec('Results',`${youtubeResults.length} results from YouTube`,youtubeResults.map(onlineRow).join('')+(youtubePageToken?'<div class="bar"><button class="ghost" data-act="ytmore">Load more results</button></div>':'')):'<div class="hero"><h2>Find your next track</h2><p>Search YouTube. Playback uses YouTube’s official player; availability, ads and embedding restrictions remain controlled by YouTube.</p></div>'}<p class="sub">Imported audio remains available offline in your local library. YouTube search and streaming need an internet connection.</p>`}
 async function searchYouTube(q=youtubeQuery,more=false){youtubeQuery=(q||youtubeQuery).trim();if(!youtubeQuery){toast('Enter a song, artist or album to search.','err');return}if(!more){youtubeResults=[];youtubePageToken=''}youtubeMore=more;go({n:'discover'});const st=$('#youtubeStatus');if(st)st.textContent=more?'Loading more results…':'Searching YouTube…';try{const params=new URLSearchParams({q:youtubeQuery,maxResults:'50'});if(more&&youtubePageToken)params.set('pageToken',youtubePageToken);const r=await fetch('/api/youtube?'+params.toString(),{headers:{'Accept':'application/json'}});let data;try{data=await r.json()}catch{throw new Error('Local server returned invalid data. Restart UNHEARD.')}if(!r.ok)throw new Error(data.error||`Search service returned HTTP ${r.status}`);const batch=(data.items||[]).filter(x=>x.id?.videoId).map(x=>{const videoId=x.id.videoId,id='youtube:'+videoId,old=(S.onlineTracks||[]).find(t=>t.id===id);const t={id,source:'youtube',videoId,title:x.snippet?.title||'Unknown title',artist:x.snippet?.channelTitle||'YouTube',album:'',dur:Number(x.contentDetails?.durationSeconds||0),image:x.snippet?.thumbnails?.medium?.url||x.snippet?.thumbnails?.default?.url||'',fav:old?.fav||false,plays:old?.plays||0,last:old?.last||0};const ix=(S.onlineTracks||[]).findIndex(z=>z.id===id);if(ix>=0)S.onlineTracks[ix]=t;else S.onlineTracks.push(t);return t});const seen=new Set(youtubeResults.map(t=>t.id));youtubeResults.push(...batch.filter(t=>!seen.has(t.id)));youtubePageToken=data.nextPageToken||'';persist();go({n:'discover'});$('#youtubeStatus').textContent=`Showing ${youtubeResults.length} results${youtubePageToken?' · more available':''}.`}catch(e){go({n:'discover'});const msg=e.message||'Unknown network error';$('#youtubeStatus').textContent='Search failed: '+msg;toast('YouTube search failed: '+msg,'err')}}
-/* Automatic similar-song playback for YouTube tracks */
+/* Vibe-based similar-song autoplay for YouTube tracks */
 let autoPickBusy=false;
+const autoTitleKey=value=>(value||'').toLowerCase()
+ .replace(/\\[[^\\]]*\\]|\\([^)]*\\)/g,' ')
+ .replace(/\\b(official|audio|video|music video|lyrics?|visuali[sz]er|hd|4k|remaster(ed)?|topic|cover|slowed|reverb|sped up|nightcore|loop)\\b/g,' ')
+ .replace(/\\b(feat\\.?|ft\\.?|with)\\b.*$/,' ')
+ .replace(/[^a-z0-9]+/g,' ').trim();
 async function autoplaySimilarYouTube(){
  const current=cur();
  if(!current||current.source!=='youtube'||autoPickBusy)return;
  autoPickBusy=true;
- err('Finding a similar song…');
+ err('Finding music with a similar vibe…');
  try{
-  const query=[current.artist,current.title,'similar songs'].filter(Boolean).join(' ');
-  const params=new URLSearchParams({q:query,maxResults:'25'});
+  // Search around the artist's sound rather than repeating the exact track title.
+  const artist=(current.artist||'').replace(/\\s*-\\s*topic$/i,'').trim();
+  const query=artist?('artists similar to '+artist+' indie alternative'):((current.title||'')+' similar vibe music');
+  const params=new URLSearchParams({q:query,maxResults:'50'});
   const response=await fetch('/api/youtube?'+params.toString(),{headers:{'Accept':'application/json'},cache:'no-store'});
   const data=await response.json();
   if(!response.ok)throw new Error(data.error||'YouTube search failed');
-  const candidates=(data.items||[]).filter(x=>x.id?.videoId&&x.id.videoId!==current.videoId);
-  if(!candidates.length)throw new Error('No similar tracks were found.');
-  const recent=new Set((S.onlineTracks||[]).filter(t=>t.last>Date.now()-24*60*60*1000).map(t=>t.id));
+  const currentTitle=autoTitleKey(current.title),currentArtist=autoTitleKey(artist);
+  const recent=new Set((S.onlineTracks||[]).filter(t=>t.last>Date.now()-7*24*60*60*1000).map(t=>t.id));
+  const seenTitles=new Set([currentTitle]);
+  const seenIds=new Set([current.videoId]);
+  const candidates=[];
+  for(const item of (data.items||[])){
+   const videoId=item.id?.videoId;
+   const title=item.snippet?.title||'';
+   const channel=item.snippet?.channelTitle||'';
+   const titleKey=autoTitleKey(title),artistKey=autoTitleKey(channel);
+   if(!videoId||seenIds.has(videoId)||!titleKey||titleKey.length<3)continue;
+   if(titleKey===currentTitle||titleKey.includes(currentTitle)||currentTitle.includes(titleKey))continue;
+   // Avoid looping through the same artist's uploads and duplicate versions.
+   if(currentArtist&&(artistKey===currentArtist||artistKey.includes(currentArtist)||currentArtist.includes(artistKey)))continue;
+   if(/\\b(cover|karaoke|instrumental|slowed|reverb|sped up|nightcore|8d audio|reaction|tutorial)\\b/i.test(title))continue;
+   if(seenTitles.has(titleKey))continue;
+   seenIds.add(videoId);seenTitles.add(titleKey);
+   candidates.push(item);
+  }
+  if(!candidates.length)throw new Error('No distinct recommendations found. Try another track.');
+  // Prefer artists/tracks not played recently, then vary the selection.
   const fresh=candidates.filter(x=>!recent.has('youtube:'+x.id.videoId));
-  const chosen=(fresh.length?fresh:candidates)[Math.floor(Math.random()*(fresh.length?fresh:candidates).length)];
+  const pool=fresh.length?fresh:candidates;
+  const chosen=pool[Math.floor(Math.random()*pool.length)];
   const videoId=chosen.id.videoId,id='youtube:'+videoId,oldTrack=(S.onlineTracks||[]).find(t=>t.id===id);
-  const nextTrack={id,source:'youtube',videoId,title:chosen.snippet?.title||'Unknown title',artist:chosen.snippet?.channelTitle||'YouTube',album:'',dur:0,image:chosen.snippet?.thumbnails?.medium?.url||chosen.snippet?.thumbnails?.default?.url||'',fav:oldTrack?.fav||false,plays:oldTrack?.plays||0,last:oldTrack?.last||0};
+  const nextTrack={id,source:'youtube',videoId,title:chosen.snippet?.title||'Unknown title',artist:chosen.snippet?.channelTitle||'YouTube',album:'',dur:Number(chosen.contentDetails?.durationSeconds||0),image:chosen.snippet?.thumbnails?.medium?.url||chosen.snippet?.thumbnails?.default?.url||'',fav:oldTrack?.fav||false,plays:oldTrack?.plays||0,last:oldTrack?.last||0};
   const ix=(S.onlineTracks||[]).findIndex(t=>t.id===id);
   if(ix>=0)S.onlineTracks[ix]=nextTrack;else S.onlineTracks.push(nextTrack);
   S.queue=[id];S.qi=0;persist();render();load(true);
-  toast('Autoplay: '+nextTrack.title);
+  toast('Up next: '+nextTrack.title);
  }catch(e){
-  err('Autoplay could not find a similar song: '+(e.message||'Please try again.'));
+  err('Autoplay could not find a distinct similar song: '+(e.message||'Please try again.'));
  }finally{autoPickBusy=false}
 }
 function initYouTubePlayer(){

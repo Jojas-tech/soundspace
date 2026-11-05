@@ -627,9 +627,9 @@ async function searchYouTube(q=youtubeQuery,more=false){youtubeQuery=(q||youtube
 /* Vibe-based similar-song autoplay for YouTube tracks */
 let autoPickBusy=false;
 const autoTitleKey=value=>(value||'').toLowerCase()
- .replace(/\\[[^\\]]*\\]|\\([^)]*\\)/g,' ')
- .replace(/\\b(official|audio|video|music video|lyrics?|visuali[sz]er|hd|4k|remaster(ed)?|topic|cover|slowed|reverb|sped up|nightcore|loop)\\b/g,' ')
- .replace(/\\b(feat\\.?|ft\\.?|with)\\b.*$/,' ')
+ .replace(/\[[^\]]*\]|\([^)]*\)/g,' ')
+ .replace(/\b(official|audio|video|music video|lyrics?|visuali[sz]er|hd|4k|remaster(ed)?|topic|cover|slowed|reverb|sped up|nightcore|loop)\b/g,' ')
+ .replace(/\b(feat\.?|ft\.?|with)\b.*$/,' ')
  .replace(/[^a-z0-9]+/g,' ').trim();
 async function autoplaySimilarYouTube(){
  const current=cur();
@@ -638,7 +638,7 @@ async function autoplaySimilarYouTube(){
  err('Finding music with a similar vibe…');
  try{
   // Search around the artist's sound rather than repeating the exact track title.
-  const artist=(current.artist||'').replace(/\\s*-\\s*topic$/i,'').trim();
+  const artist=(current.artist||'').replace(/\s*-\s*topic$/i,'').trim();
   const query=artist?('artists similar to '+artist+' indie alternative'):((current.title||'')+' similar vibe music');
   const params=new URLSearchParams({q:query,maxResults:'50'});
   const response=await fetch('/api/youtube?'+params.toString(),{headers:{'Accept':'application/json'},cache:'no-store'});
@@ -658,7 +658,7 @@ async function autoplaySimilarYouTube(){
    if(titleKey===currentTitle||titleKey.includes(currentTitle)||currentTitle.includes(titleKey))continue;
    // Avoid looping through the same artist's uploads and duplicate versions.
    if(currentArtist&&(artistKey===currentArtist||artistKey.includes(currentArtist)||currentArtist.includes(artistKey)))continue;
-   if(/\\b(cover|karaoke|instrumental|slowed|reverb|sped up|nightcore|8d audio|reaction|tutorial)\\b/i.test(title))continue;
+   if(/\b(cover|karaoke|instrumental|slowed|reverb|sped up|nightcore|8d audio|reaction|tutorial)\b/i.test(title))continue;
    if(seenTitles.has(titleKey))continue;
    seenIds.add(videoId);seenTitles.add(titleKey);
    candidates.push(item);
